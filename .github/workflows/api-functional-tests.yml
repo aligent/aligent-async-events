@@ -7,14 +7,21 @@ on:
 
 jobs:
   api-functional-test:
-    runs-on:  "ubuntu-latest"
+    runs-on: "ubuntu-latest"
 
     # Only run api tests on feature branches. Simple documentation updates, formatting can be ignored
     if: contains(github.head_ref, 'feature')
+    name: ${{ matrix.job_title }}
     strategy:
       fail-fast: true
       matrix:
-        magento: ["magento/project-community-edition:>=2.4.4 <2.4.5", "magento/project-community-edition:>=2.4.5 <2.4.6", "magento/project-community-edition:>=2.4.6 <2.4.7"]
+        magento:
+          [
+            "magento/project-community-edition:>=2.4.4 <2.4.5",
+            "magento/project-community-edition:>=2.4.5 <2.4.6",
+            "magento/project-community-edition:>=2.4.6 <2.4.7",
+            "magento/project-community-edition:>=2.4.7 <2.4.8",
+          ]
         include:
           - magento: magento/project-community-edition:>=2.4.4 <2.4.5
             php: 8.1
@@ -23,8 +30,8 @@ jobs:
             elasticsearch: "elasticsearch:7.16.3"
             rabbitmq: "rabbitmq:3.9-management"
             redis: "redis:6.2"
-            varnish: "varnish:7.0"
-            nginx: "nginx:1.18"
+            job_title: "2.4.4"
+
           - magento: magento/project-community-edition:>=2.4.5 <2.4.6
             php: 8.1
             composer: 2
@@ -32,17 +39,25 @@ jobs:
             elasticsearch: "elasticsearch:7.16.3"
             rabbitmq: "rabbitmq:3.9-management"
             redis: "redis:6.2"
-            varnish: "varnish:7.0"
-            nginx: "nginx:1.18"
+            job_title: "2.4.5"
+
           - magento: magento/project-community-edition:>=2.4.6 <2.4.7
-            php: 8.1
-            composer: 2
+            php: 8.2
+            composer: 2.2
             mysql: "mysql:8.0"
             elasticsearch: "elasticsearch:7.17.9"
-            rabbitmq: "rabbitmq:3.9-management"
+            rabbitmq: "rabbitmq:3.12-management"
             redis: "redis:7.0"
-            varnish: "varnish:7.1"
-            nginx: "nginx:1.18"
+            job_title: "2.4.6"
+
+          - magento: magento/project-community-edition:>=2.4.7 <2.4.8
+            php: 8.3
+            composer: 2.7
+            mysql: "mariadb:10.6"
+            elasticsearch: "elasticsearch:7.17.9"
+            rabbitmq: "rabbitmq:3.12-management"
+            redis: "redis:7.2"
+            job_title: "2.4.7"
 
     services:
       elasticsearch:
@@ -58,7 +73,7 @@ jobs:
           - 9200:9200
 
       mysql:
-        image:  ${{ matrix.mysql }}
+        image: ${{ matrix.mysql }}
         env:
           MYSQL_DATABASE: magento_functional_tests
           MYSQL_USER: user
@@ -77,7 +92,7 @@ jobs:
           - 5672:5672
           - 15672:15672
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set PHP Version
         uses: shivammathur/setup-php@v2
         with:
@@ -94,11 +109,11 @@ jobs:
       - uses: graycoreio/github-actions-magento2/get-magento-version@main
         id: magento-version
         with:
-          working-directory:  "../magento2"
+          working-directory: "../magento2"
 
       - name: Get Composer Cache Directory
         shell: bash
-        working-directory:  "../magento2"
+        working-directory: "../magento2"
         id: composer-cache
         run: |
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -111,7 +126,7 @@ jobs:
 
       - run: composer config repositories.local path $GITHUB_WORKSPACE
         name: Add Github Repo for Testing
-        working-directory:  "../magento2"
+        working-directory: "../magento2"
         shell: bash
 
       - run: |
@@ -119,18 +134,18 @@ jobs:
           composer config --no-interaction allow-plugins.laminas/laminas-dependency-plugin true
           composer config --no-interaction allow-plugins.magento/* true
         name: Fixup Composer Plugins
-        working-directory:  "../magento2"
+        working-directory: "../magento2"
 
       - run: composer require aligent/async-events "@dev" --no-update && composer install
         name: Require and attempt install
-        working-directory:  "../magento2"
+        working-directory: "../magento2"
         shell: bash
         env:
           COMPOSER_CACHE_DIR: ${{ steps.composer-cache.outputs.dir }}
           COMPOSER_AUTH: ${{ secrets.composer_auth }}
 
       - name: Replace Configuration Settings for env
-        working-directory:  ../magento2/dev/tests/api-functional
+        working-directory: ../magento2/dev/tests/api-functional
         run: |
           cp phpunit_rest.xml.dist phpunit_rest.xml
           cp config/install-config-mysql.php.dist config/install-config-mysql.php
@@ -148,5 +163,5 @@ jobs:
           php -S 127.0.0.1:8082 -t ./pub/ ./phpserver/router.php &
           sleep 5
           vendor/bin/phpunit -c $(pwd)/dev/tests/api-functional/phpunit_rest.xml vendor/aligent/async-events/Test/Api
-        working-directory:  ../magento2
+        working-directory: ../magento2
         name: Run API Functional Tests

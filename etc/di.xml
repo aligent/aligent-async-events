@@ -101,7 +101,7 @@
 
     <type name="\Aligent\AsyncEvents\Model\Indexer\IndexStructure">
         <arguments>
-            <argument name="adapter" xsi:type="object">\Magento\Elasticsearch\Model\Adapter\Elasticsearch\Proxy</argument>
+            <argument name="adapter" xsi:type="object">dataMapperAdapter</argument>
             <argument name="scopeResolver" xsi:type="object" shared="false">\Aligent\AsyncEvents\Model\Resolver\AsyncEvent</argument>
         </arguments>
     </type>
