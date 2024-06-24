@@ -154,7 +154,7 @@ jobs:
           sed -i "s/'amqp-host' => 'localhost'/'amqp-host' => '127.0.0.1'/" etc/install-config-mysql.php.dist
           sed -i "s/'consumers-wait-for-messages' => '0'/'consumers-wait-for-messages' => '1'/" etc/install-config-mysql.php.dist
           mkdir etc/di/preferences/cli
-          cp ../../../vendor/aligent/magento-async-events/Test/_files/ce.php ./etc/di/preferences/cli
+          cp ../../../vendor/aligent/async-events/Test/_files/ce.php ./etc/di/preferences/cli
 
       - run: ../../../vendor/bin/phpunit ../../../vendor/aligent/async-events/Test/Integration
         working-directory: ../magento2/dev/tests/integration
