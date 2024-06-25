@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Aligent\AsyncEvents\Model\Indexer;
 
 use Aligent\AsyncEvents\Helper\Config;
+use Aligent\AsyncEvents\Model\Adapter\BatchDataMapper\AsyncEventLogMapper;
 use Aligent\AsyncEvents\Model\Indexer\DataProvider\AsyncEventSubscriberLogs;
 use Aligent\AsyncEvents\Model\Resolver\AsyncEvent;
 use ArrayIterator;
 use Magento\CatalogSearch\Model\Indexer\IndexerHandlerFactory;
-use Magento\Elasticsearch\Model\Adapter\Elasticsearch;
+use Magento\Elasticsearch\Model\Adapter\ElasticsearchFactory;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
@@ -59,7 +60,8 @@ class AsyncEventSubscriber implements
      * @param AsyncEvent $asyncEventScopeResolver
      * @param IndexStructure $indexStructure
      * @param Config $config
-     * @param Elasticsearch $dataMapperAdapter
+     * @param ElasticsearchFactory $adapterFactory
+     * @param AsyncEventLogMapper $loggerMapper
      * @param array $data
      * @param int|null $batchSize
      * @param DeploymentConfig|null $deploymentConfig
@@ -71,7 +73,8 @@ class AsyncEventSubscriber implements
         private readonly AsyncEvent $asyncEventScopeResolver,
         private readonly IndexStructureInterface $indexStructure,
         private readonly Config $config,
-        private readonly Elasticsearch $dataMapperAdapter,
+        private readonly ElasticsearchFactory $adapterFactory,
+        private readonly AsyncEventLogMapper $loggerMapper,
         private readonly array $data,
         int $batchSize = null,
         DeploymentConfig $deploymentConfig = null
@@ -99,10 +102,14 @@ class AsyncEventSubscriber implements
             return;
         }
 
+        $adapter = $this->adapterFactory->create([
+            'batchDocumentDataMapper' => $this->loggerMapper
+        ]);
+
         $saveHandler = $this->indexerHandlerFactory->create(
             [
                 'data' => $this->data,
-                'adapter' => $this->dataMapperAdapter,
+                'adapter' => $adapter,
                 'scopeResolver' => $this->asyncEventScopeResolver,
                 'indexStructure' => $this->indexStructure
             ]

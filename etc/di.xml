@@ -94,25 +94,12 @@
     <type name="Aligent\AsyncEvents\Model\Indexer\AsyncEventSubscriber">
         <arguments>
             <argument name="dimensionProvider" xsi:type="object" shared="false">\Aligent\AsyncEvents\Model\Indexer\AsyncEventDimensionProvider</argument>
-            <argument name="dataMapperAdapter" xsi:type="object">dataMapperAdapter</argument>
-            <argument name="indexStructure" xsi:type="object">dataMapperIndexStructure</argument>
         </arguments>
     </type>
 
     <type name="\Aligent\AsyncEvents\Model\Indexer\IndexStructure">
         <arguments>
-            <argument name="adapter" xsi:type="object">dataMapperAdapter</argument>
             <argument name="scopeResolver" xsi:type="object" shared="false">\Aligent\AsyncEvents\Model\Resolver\AsyncEvent</argument>
-        </arguments>
-    </type>
-
-    <type name="Magento\Elasticsearch\Model\Adapter\BatchDataMapper\DataMapperFactory">
-        <arguments>
-            <argument name="dataMappers" xsi:type="array">
-                <item name="async_event" xsi:type="string">
-                    \Aligent\AsyncEvents\Model\Adapter\BatchDataMapper\AsyncEventLogMapper
-                </item>
-            </argument>
         </arguments>
     </type>
 
@@ -130,18 +117,4 @@
         <plugin name="map_string_scope_to_int"
                 type="Aligent\AsyncEvents\Plugin\MapStringScopeToInt"/>
     </type>
-
-    <virtualType name="dataMapperIndexStructure" type="Magento\Elasticsearch\Model\Indexer\IndexStructure">
-        <arguments>
-            <argument name="adapter" xsi:type="object">
-                dataMapperAdapter
-            </argument>
-        </arguments>
-    </virtualType>
-
-    <virtualType name="dataMapperAdapter" type="Magento\Elasticsearch\Model\Adapter\Elasticsearch\Proxy">
-        <arguments>
-            <argument name="batchDocumentDataMapper" xsi:type="object">\Aligent\AsyncEvents\Model\Adapter\BatchDataMapper\AsyncEventLogMapper</argument>
-        </arguments>
-    </virtualType>
 </config>
